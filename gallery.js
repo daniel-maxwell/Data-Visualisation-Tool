@@ -103,4 +103,5 @@ function Gallery() {
       loop();
     }
   };
+  
 }
