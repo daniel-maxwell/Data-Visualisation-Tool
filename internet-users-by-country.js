@@ -11,12 +11,11 @@ function SearchBar() {
     this.xAxisLabel = 'year';
     this.yAxisLabel = '% of population using internet services';
     var marginSize = 35;
-
     this.minUsers = 0;
     this.maxUsers = 100;
-
     this.startYear = 2010;
     this.endYear = 2020;
+    this.graphDataValues;
     
 
     // Preload the data. This function is called automatically by the
@@ -79,51 +78,9 @@ function SearchBar() {
     };
 
 
-    // takes the search query as an input and filters matches from the countries column
-    this.searchForQuery = function(searchQuery) {
-        function filterCountries(countriesArray, query) {
-            return countries.filter(function(el){
-                return el.toLowerCase().indexOf(query.toLowerCase()) !== -1
-            })
-        }
-        const resultsArray = filterCountries(countries, searchQuery);
-        top5 = resultsArray.slice(0, 5);  
-    };
-
-
-
-    // renders the first (maximum of 5) results from resultsArray to the screen
-    this.displayResults = function(matches){
-        let self = this;
-        noStroke();
-        strokeWeight(0.5);
-
-        //function which generates each result and detects user activity on the result
-        const buildResultButton = function(el, i){
-            let r = [width/65, height/4.5 + i*55, width/4.5, height/15]
-            stroke(0)
-            if (mouseX > r[0] && mouseX < r[0] + r[2] && mouseY > r[1] && mouseY < r[1] + r[3]) {
-                fill(152, 255, 152);
-                if (mouseIsPressed){
-                    self.generateGraph(el);
-                }
-            } else {
-                noFill();
-            }
-            rect(r[0], r[1], r[2], r[3], 10);
-            noStroke();
-            fill(0)
-            text(el, width/8, height/12 + 100 + i*55)
-        }
-
-        textAlign('center');
-        matches.forEach((element, index) => buildResultButton(element, index));
-    };
-
-
     this.layout = {
         marginSize: marginSize,
-    
+        
         // Locations of margin positions. Left and bottom have double margin
         // size due to axis and tick labels.
         leftMargin: marginSize * 10,
@@ -166,11 +123,64 @@ function SearchBar() {
                    this.layout.bottomMargin, // Smaller pay gap at bottom.
                    this.layout.topMargin);   // Bigger pay gap at top.
     };
+    
+
+    // takes the search query as an input and filters matches from the countries column
+    this.searchForQuery = function(searchQuery) {
+        function filterCountries(countriesArray, query) {
+            return countries.filter(function(el){
+                return el.toLowerCase().indexOf(query.toLowerCase()) !== -1
+            })
+        }
+        const resultsArray = filterCountries(countries, searchQuery);
+        top5 = resultsArray.slice(0, 5);  
+    };
+
+
+    // renders the first (maximum of 5) results from resultsArray to the screen
+    this.displayResults = function(matches){
+        let self = this;
+        noStroke();
+        strokeWeight(0.5);
+
+        //function which generates each result and detects user activity on the result
+        const buildResultButton = function(el, i){
+            let r = [width/65, height/4.5 + i*55, width/4.5, height/15]
+            stroke(0)
+            if (mouseX > r[0] && mouseX < r[0] + r[2] && mouseY > r[1] && mouseY < r[1] + r[3]) {
+                fill(152, 255, 152);
+                if (mouseIsPressed){
+                    self.graphDataValues = el;
+                }
+            } else {
+                noFill();
+            }
+            rect(r[0], r[1], r[2], r[3], 10);
+            noStroke();
+            fill(0)
+            text(el, width/8, height/12 + 100 + i*55)
+        }
+
+        textAlign('center');
+        matches.forEach((element, index) => buildResultButton(element, index));
+    };
 
 
     this.generateGraph = function(accessionKey) {
         let row = this.data.findRow(accessionKey, 'Country Name');
-        console.log(row);
+        //console.log(row);
+        fill(255, 0, 0);
+        stroke(255, 0, 0);
+        strokeWeight(2);
+        for(let i=2; i<12; i++ ){
+
+            line(
+                this.mapYearToWidth(i-2 + 2010),
+                this.mapUsersToHeight(parseInt(row.get(i))),
+                this.mapYearToWidth(i-1 + 2010),
+                this.mapUsersToHeight(parseInt(row.get(i+1)))
+                )
+        }
     };
 
 
@@ -211,6 +221,10 @@ function SearchBar() {
         for (let i=0; i<11; i++){
             drawXAxisTickLabel(i+1 + 2010, this.layout,
                 this.mapYearToWidth.bind(this));
+        }
+
+        if (this.graphDataValues !== undefined){
+            this.generateGraph(this.graphDataValues);
         }
 
         this.destroy = function() {
