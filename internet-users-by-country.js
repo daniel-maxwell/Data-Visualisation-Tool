@@ -120,8 +120,8 @@ function SearchBar() {
         return map(value,
                    this.minUsers,
                    this.maxUsers,
-                   this.layout.bottomMargin, // Smaller pay gap at bottom.
-                   this.layout.topMargin);   // Bigger pay gap at top.
+                   this.layout.bottomMargin,
+                   this.layout.topMargin);  
     };
     
 

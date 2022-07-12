@@ -19,6 +19,7 @@ function setup() {
   gallery.addVisual(new PayGapTimeSeries());
   gallery.addVisual(new ClimateChange());
   gallery.addVisual(new SearchBar());
+  gallery.addVisual(new InteractiveBubbles());
 }
 
 function draw() {
