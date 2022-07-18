@@ -3,6 +3,7 @@ function InteractiveBubbles() {
     this.id = 'stackoverflow-developer-surver-2021';
     this.title = 'StackOverflow Developer Survey';
     this.loaded = false;
+    this.bubblecoordinates = {'HTML/CSS': [0, 0], 'Python': [0,0], 'JavaScript': [0,0], 'Go': [0,0], 'Java': [0,0], 'C': [0,0], 'C++': [0,0], 'C#': [0,0], 'R': [0,0], 'Ruby': [0,0], 'Kotlin': [0,0], 'Swift': [0,0], 'TypeScript': [0,0]};
 
     
 
@@ -19,9 +20,10 @@ function InteractiveBubbles() {
             });
     }
 
+
     this.setup = function()
     {
-	    createCanvas(1000, 1000);
+	    resizeCanvas(1000, 1000, true);
         this.languages = [];
         this.bubbles = [];
         for (var i=0; i < this.data.getRowCount(); i++) {
@@ -32,7 +34,6 @@ function InteractiveBubbles() {
             if (name != 'NA')
             {
                 var tempArray = name.split(",")
-                console.log(tempArray);
                 tempArray.forEach(el => this.languages.push(el));
             }
 
@@ -61,7 +62,7 @@ function InteractiveBubbles() {
 
     this.draw = function() 
     {
-        background(100);
+        background(255);
         push();
         textAlign(CENTER);
         translate(width/2, height/2);
@@ -72,9 +73,9 @@ function InteractiveBubbles() {
         }
         pop();
         
-
     }
 
+    // Bubble constructor
     const Bubble = function(_name)
     {
         this.name = _name
@@ -83,7 +84,7 @@ function InteractiveBubbles() {
         this.color = color(random(0, 255), random(0, 255), random(0, 255));
         this.size = 20;
         this.dir = createVector(0, 0);
-       
+        this.expanded = 0
         
         this.draw = function() 
         {
@@ -92,34 +93,56 @@ function InteractiveBubbles() {
             ellipse(this.pos.x, this.pos.y, this.size);
             fill(0);
             text(this.name, this.pos.x, this.pos.y);
-
+            // displace the bubble based on how much it overlaps with other bubbles
             this.pos.add(this.dir);
 
+            if (this.withinBubble(mouseX, mouseY, this.pos.x + width/2, this.pos.y + height/2, this.size/2) && this.expanded == 0)
+            {
+                while (this.expanded < 100) {
+                    for (let i=0; i<100; i++) {
+                        this.size = this.size += (i/500)
+                        this.expanded += 1
+                    };
+                }
+            }
+            
+            else if (this.withinBubble(mouseX, mouseY, this.pos.x + width/2, this.pos.y + height/2, this.size/2) === false && this.expanded > 98)
+            {
+                while (this.expanded > 0) {
+                    for (let i=0; i<100; i++) {
+                        this.size = this.size -= (i/500)
+                        this.expanded -= 1
+                    }
+                }
+            }
         }
-        
+
+
+        // test if a the distance between the mouse cursor and the center of a bubble is smaller than its raidus
+        this.withinBubble = function(x, y, cx, cy, radius) {
+            var distancesquared = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+            return distancesquared <= radius * radius;
+        }
 
         this.setValue = function(v)
         {
-            this.size = map(v, 0, 26, 5, 200);
+            this.size = map(v, 0, 26, 50, 275);
         }
 
+        // if bubbles overlap, changes the location of the bubble by a random 2D vector
         this.updateDirection = function(_bubbles)
         {
             this.dir = createVector(0,0);
-            for (var i=0; i < _bubbles.length; i++)
-            {
-                if (_bubbles[i].id != this.id)
-                {
+
+            for (var i=0; i < _bubbles.length; i++) {
+                if (_bubbles[i].id != this.id) {
                     var v = p5.Vector.sub(this.pos, _bubbles[i].pos);
                     var d = v.mag();
-                    if (d < this.size/2 + _bubbles[i].size / 2)
-                    {
-                        if (d === 0)
-                        {
+                    if (d < this.size/2 + _bubbles[i].size / 2) {
+                        if (d === 0) {
                             this.dir.add(p5.Vector.random2D());
                         }
-                        else
-                        {
+                        else {
                          this.dir.add(v);
                         }
                     }
@@ -127,17 +150,21 @@ function InteractiveBubbles() {
             }
             this.dir.normalize();
         }
-        
     }
 
+
+    // Generates a random ID based on a string of the alphanumeric characters
     function getRandomID() {
         var alpha = 'abcdefghijklmnopqrstuvwxyz0123456789'
         var s = "";
         for (let i=0; i<10; i++) {
             s += alpha[floor(random(0, alpha.length))]
         }
-
         return s
+    }
+
+    this.destroy = function() {
+        resizeCanvas(1024, 576);
     }
 
 }
